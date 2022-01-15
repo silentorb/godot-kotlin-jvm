@@ -27,7 +27,7 @@ import kotlin.Unit
  * Default 3D rendering material.
  *
  * Tutorials:
- * [https://docs.godotengine.org/en/3.4/tutorials/3d/spatial_material.html](https://docs.godotengine.org/en/3.4/tutorials/3d/spatial_material.html)
+ * [$DOCS_URL/tutorials/3d/spatial_material.html]($DOCS_URL/tutorials/3d/spatial_material.html)
  *
  * This provides a default material with a wide variety of rendering features and properties without the need to write shader code. See the tutorial below for details.
  */
@@ -66,7 +66,7 @@ public open class SpatialMaterial : Material() {
     }
 
   /**
-   * The strength of the anisotropy effect.
+   * The strength of the anisotropy effect. This is multiplied by [anisotropyFlowmap]'s alpha channel if a texture is defined there and the texture contains an alpha channel.
    */
   public open var anisotropy: Double
     get() {
@@ -82,7 +82,11 @@ public open class SpatialMaterial : Material() {
     }
 
   /**
-   * If `true`, anisotropy is enabled. Changes the shape of the specular blob and aligns it to tangent space. Mesh tangents are needed for this to work. If the mesh does not contain tangents the anisotropy effect will appear broken.
+   * If `true`, anisotropy is enabled. Anisotropy changes the shape of the specular blob and aligns it to tangent space. This is useful for brushed aluminium and hair reflections.
+   *
+   * **Note:** Mesh tangents are needed for anisotropy to work. If the mesh does not contain tangents, the anisotropy effect will appear broken.
+   *
+   * **Note:** Material anisotropy should not to be confused with anisotropic texture filtering. Anisotropic texture filtering can be enabled by selecting a texture in the FileSystem dock, going to the Import dock, checking the **Anisotropic** checkbox then clicking **Reimport**.
    */
   public open var anisotropyEnabled: Boolean
     get() {
@@ -98,7 +102,9 @@ public open class SpatialMaterial : Material() {
     }
 
   /**
-   * Texture that offsets the tangent map for anisotropy calculations.
+   * Texture that offsets the tangent map for anisotropy calculations and optionally controls the anisotropy effect (if an alpha channel is present). The flowmap texture is expected to be a derivative map, with the red channel representing distortion on the X axis and green channel representing distortion on the Y axis. Values below 0.5 will result in negative distortion, whereas values above 0.5 will result in positive distortion.
+   *
+   * If present, the texture's alpha channel will be used to multiply the strength of the [anisotropy] effect. Fully opaque pixels will keep the anisotropy effect's original strength while fully transparent pixels will disable the anisotropy effect entirely. The flowmap texture's blue channel is ignored.
    */
   public open var anisotropyFlowmap: Texture?
     get() {
@@ -191,6 +197,24 @@ public open class SpatialMaterial : Material() {
       TransferContext.writeArguments(LONG to value)
       TransferContext.callMethod(rawPtr,
           ENGINEMETHOD_ENGINECLASS_SPATIALMATERIAL_SET_AO_TEXTURE_CHANNEL, NIL)
+    }
+
+  /**
+   * If [godot.ProjectSettings.rendering/gles3/shaders/shaderCompilationMode] is `Synchronous` (with or without cache), this determines how this material must behave in regards to asynchronous shader compilation.
+   *
+   * [ASYNC_MODE_VISIBLE] is the default and the best for most cases.
+   */
+  public open var asyncMode: Long
+    get() {
+      TransferContext.writeArguments()
+      TransferContext.callMethod(rawPtr, ENGINEMETHOD_ENGINECLASS_SPATIALMATERIAL_GET_ASYNC_MODE,
+          LONG)
+      return TransferContext.readReturnValue(LONG, false) as Long
+    }
+    set(`value`) {
+      TransferContext.writeArguments(LONG to value)
+      TransferContext.callMethod(rawPtr, ENGINEMETHOD_ENGINECLASS_SPATIALMATERIAL_SET_ASYNC_MODE,
+          NIL)
     }
 
   /**
@@ -456,7 +480,7 @@ public open class SpatialMaterial : Material() {
   /**
    * Texture that specifies the per-pixel normal of the detail overlay.
    *
-   * **Note:** Godot expects the normal map to use X+, Y-, and Z+ coordinates. See [this page](http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates) for a comparison of normal map coordinates expected by popular engines.
+   * **Note:** Godot expects the normal map to use X+, Y+, and Z+ coordinates. See [this page](http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates) for a comparison of normal map coordinates expected by popular engines.
    */
   public open var detailNormal: Texture?
     get() {
@@ -930,7 +954,7 @@ public open class SpatialMaterial : Material() {
    *
    * **Note:** The mesh must have both normals and tangents defined in its vertex data. Otherwise, the normal map won't render correctly and will only appear to darken the whole surface. If creating geometry with [godot.SurfaceTool], you can use [godot.SurfaceTool.generateNormals] and [godot.SurfaceTool.generateTangents] to automatically generate normals and tangents respectively.
    *
-   * **Note:** Godot expects the normal map to use X+, Y-, and Z+ coordinates. See [this page](http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates) for a comparison of normal map coordinates expected by popular engines.
+   * **Note:** Godot expects the normal map to use X+, Y+, and Z+ coordinates. See [this page](http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates) for a comparison of normal map coordinates expected by popular engines.
    */
   public open var normalTexture: Texture?
     get() {
@@ -1721,6 +1745,31 @@ public open class SpatialMaterial : Material() {
   }
 
 
+  public enum class AsyncMode(
+    id: Long
+  ) {
+    /**
+     * The real conditioned shader needed on each situation will be sent for background compilation. In the meantime, a very complex shader that adapts to every situation will be used ("ubershader"). This ubershader is much slower to render, but will keep the game running without stalling to compile. Once shader compilation is done, the ubershader is replaced by the traditional optimized shader.
+     */
+    ASYNC_MODE_VISIBLE(0),
+    /**
+     * Anything with this material applied won't be rendered while this material's shader is being compiled.
+     *
+     * This is useful for optimization, in cases where the visuals won't suffer from having certain non-essential elements missing during the short time their shaders are being compiled.
+     */
+    ASYNC_MODE_HIDDEN(1),
+    ;
+
+    public val id: Long
+    init {
+      this.id = id
+    }
+
+    public companion object {
+      public fun from(`value`: Long) = values().single { it.id == `value` }
+    }
+  }
+
   public enum class EmissionOperator(
     id: Long
   ) {
@@ -2271,6 +2320,18 @@ public open class SpatialMaterial : Material() {
   }
 
   public companion object {
+    /**
+     * Anything with this material applied won't be rendered while this material's shader is being compiled.
+     *
+     * This is useful for optimization, in cases where the visuals won't suffer from having certain non-essential elements missing during the short time their shaders are being compiled.
+     */
+    public final const val ASYNC_MODE_HIDDEN: Long = 1
+
+    /**
+     * The real conditioned shader needed on each situation will be sent for background compilation. In the meantime, a very complex shader that adapts to every situation will be used ("ubershader"). This ubershader is much slower to render, but will keep the game running without stalling to compile. Once shader compilation is done, the ubershader is replaced by the traditional optimized shader.
+     */
+    public final const val ASYNC_MODE_VISIBLE: Long = 0
+
     /**
      * Billboard mode is disabled.
      */

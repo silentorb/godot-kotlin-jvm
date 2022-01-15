@@ -701,6 +701,14 @@ public object OS : Object() {
   }
 
   /**
+   * Crashes the engine (or the editor if called within a `tool` script). This should *only* be used for testing the system's crash handler, not for any other purpose. For general error reporting, use (in order of preference) [@GDScript.assert], [@GDScript.pushError] or [alert]. See also [kill].
+   */
+  public fun crash(message: String): Unit {
+    TransferContext.writeArguments(STRING to message)
+    TransferContext.callMethod(rawPtr, ENGINEMETHOD_ENGINECLASS__OS_CRASH, NIL)
+  }
+
+  /**
    * Delays execution of the current thread by `msec` milliseconds. `msec` must be greater than or equal to `0`. Otherwise, [delayMsec] will do nothing and will print an error message.
    *
    * **Note:** [delayMsec] is a *blocking* way to delay code execution. To delay code execution in a non-blocking way, see [godot.SceneTree.createTimer]. Yielding with [godot.SceneTree.createTimer] will delay the execution of code placed below the `yield` without affecting the rest of the project (or editor, for [godot.EditorPlugin]s and [godot.EditorScript]s).
@@ -757,6 +765,8 @@ public object OS : Object() {
    *
    * If `blocking` is `false`, the Godot thread will continue while the new process runs. It is not possible to retrieve the shell output in non-blocking mode, so `output` will be empty.
    *
+   * On Windows, if `open_console` is `true` and process is console app, new terminal window will be opened, it's ignored on other platforms.
+   *
    * The return value also depends on the blocking mode. When blocking, the method will return an exit code of the process. When non-blocking, the method returns a process ID, which you can use to monitor the process (and potentially terminate it with [kill]). If the process forking (non-blocking) or opening (blocking) fails, the method will return `-1` or another exit code.
    *
    * Example of blocking mode and retrieving the shell output:
@@ -785,10 +795,11 @@ public object OS : Object() {
     arguments: PoolStringArray,
     blocking: Boolean = true,
     output: VariantArray<Any?> = VariantArray(),
-    readStderr: Boolean = false
+    readStderr: Boolean = false,
+    openConsole: Boolean = false
   ): Long {
     TransferContext.writeArguments(STRING to path, POOL_STRING_ARRAY to arguments, BOOL to blocking,
-        ARRAY to output, BOOL to readStderr)
+        ARRAY to output, BOOL to readStderr, BOOL to openConsole)
     TransferContext.callMethod(rawPtr, ENGINEMETHOD_ENGINECLASS__OS_EXECUTE, LONG)
     return TransferContext.readReturnValue(LONG, false) as Long
   }
@@ -821,7 +832,7 @@ public object OS : Object() {
   }
 
   /**
-   * Returns the *global* cache data directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the `XDG_CACHE_HOME` environment variable before starting the project. See [godot.File paths in Godot projects](https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html) in the documentation for more information. See also [getConfigDir] and [getDataDir].
+   * Returns the *global* cache data directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the `XDG_CACHE_HOME` environment variable before starting the project. See [godot.File paths in Godot projects]($DOCS_URL/tutorials/io/data_paths.html) in the documentation for more information. See also [getConfigDir] and [getDataDir].
    *
    * Not to be confused with [getUserDataDir], which returns the *project-specific* user data path.
    */
@@ -858,7 +869,7 @@ public object OS : Object() {
   }
 
   /**
-   * Returns the *global* user configuration directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the `XDG_CONFIG_HOME` environment variable before starting the project. See [godot.File paths in Godot projects](https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html) in the documentation for more information. See also [getCacheDir] and [getDataDir].
+   * Returns the *global* user configuration directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the `XDG_CONFIG_HOME` environment variable before starting the project. See [godot.File paths in Godot projects]($DOCS_URL/tutorials/io/data_paths.html) in the documentation for more information. See also [getCacheDir] and [getDataDir].
    *
    * Not to be confused with [getUserDataDir], which returns the *project-specific* user data path.
    */
@@ -892,7 +903,7 @@ public object OS : Object() {
   }
 
   /**
-   * Returns the *global* user data directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the `XDG_DATA_HOME` environment variable before starting the project. See [godot.File paths in Godot projects](https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html) in the documentation for more information. See also [getCacheDir] and [getConfigDir].
+   * Returns the *global* user data directory according to the operating system's standards. On desktop platforms, this path can be overridden by setting the `XDG_DATA_HOME` environment variable before starting the project. See [godot.File paths in Godot projects]($DOCS_URL/tutorials/io/data_paths.html) in the documentation for more information. See also [getCacheDir] and [getConfigDir].
    *
    * Not to be confused with [getUserDataDir], which returns the *project-specific* user data path.
    */
@@ -903,6 +914,8 @@ public object OS : Object() {
   }
 
   /**
+   * Deprecated, use [godot.Time.getDateDictFromSystem] instead.
+   *
    * Returns current date as a dictionary of keys: `year`, `month`, `day`, `weekday`, `dst` (Daylight Savings Time).
    */
   public fun getDate(utc: Boolean = false): Dictionary<Any?, Any?> {
@@ -912,6 +925,8 @@ public object OS : Object() {
   }
 
   /**
+   * Deprecated, use [godot.Time.getDatetimeDictFromSystem] instead.
+   *
    * Returns current datetime as a dictionary of keys: `year`, `month`, `day`, `weekday`, `dst` (Daylight Savings Time), `hour`, `minute`, `second`.
    */
   public fun getDatetime(utc: Boolean = false): Dictionary<Any?, Any?> {
@@ -921,6 +936,8 @@ public object OS : Object() {
   }
 
   /**
+   * Deprecated, use [godot.Time.getDatetimeDictFromUnixTime] instead.
+   *
    * Gets a dictionary of time values corresponding to the given UNIX epoch time (in seconds).
    *
    * The returned Dictionary's values will be the same as [getDatetime], with the exception of Daylight Savings Time as it cannot be determined from the epoch.
@@ -1041,6 +1058,17 @@ public object OS : Object() {
     TransferContext.writeArguments()
     TransferContext.callMethod(rawPtr, ENGINEMETHOD_ENGINECLASS__OS_GET_LOCALE_LANGUAGE, STRING)
     return TransferContext.readReturnValue(STRING, false) as String
+  }
+
+  /**
+   * Returns the ID of the main thread. See [getThreadCallerId].
+   *
+   * **Note:** Thread IDs are not deterministic and may be reused across application restarts.
+   */
+  public fun getMainThreadId(): Long {
+    TransferContext.writeArguments()
+    TransferContext.callMethod(rawPtr, ENGINEMETHOD_ENGINECLASS__OS_GET_MAIN_THREAD_ID, LONG)
+    return TransferContext.readReturnValue(LONG, false) as Long
   }
 
   /**
@@ -1244,7 +1272,7 @@ public object OS : Object() {
   }
 
   /**
-   * Returns the amount of static memory being used by the program in bytes.
+   * Returns the amount of static memory being used by the program in bytes (only works in debug).
    */
   public fun getStaticMemoryUsage(): Long {
     TransferContext.writeArguments()
@@ -1317,6 +1345,8 @@ public object OS : Object() {
   }
 
   /**
+   * Deprecated, use [godot.Time.getTicksMsec] instead.
+   *
    * Returns the amount of time passed in milliseconds since the engine started.
    */
   public fun getTicksMsec(): Long {
@@ -1326,6 +1356,8 @@ public object OS : Object() {
   }
 
   /**
+   * Deprecated, use [godot.Time.getTicksUsec] instead.
+   *
    * Returns the amount of time passed in microseconds since the engine started.
    */
   public fun getTicksUsec(): Long {
@@ -1335,6 +1367,8 @@ public object OS : Object() {
   }
 
   /**
+   * Deprecated, use [godot.Time.getTimeDictFromSystem] instead.
+   *
    * Returns current time as a dictionary of keys: hour, minute, second.
    */
   public fun getTime(utc: Boolean = false): Dictionary<Any?, Any?> {
@@ -1505,7 +1539,7 @@ public object OS : Object() {
   }
 
   /**
-   * Returns `true` if the feature for the given feature tag is supported in the currently running instance, depending on the platform, build etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [godot.Feature Tags](https://docs.godotengine.org/en/3.4/tutorials/export/feature_tags.html) documentation for more details.
+   * Returns `true` if the feature for the given feature tag is supported in the currently running instance, depending on the platform, build etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [godot.Feature Tags]($DOCS_URL/tutorials/export/feature_tags.html) documentation for more details.
    *
    * **Note:** Tag names are case-sensitive.
    */
@@ -1670,7 +1704,7 @@ public object OS : Object() {
   }
 
   /**
-   * Kill (terminate) the process identified by the given process ID (`pid`), e.g. the one returned by [execute] in non-blocking mode.
+   * Kill (terminate) the process identified by the given process ID (`pid`), e.g. the one returned by [execute] in non-blocking mode. See also [crash].
    *
    * **Note:** This method can also be used to kill processes that were not spawned by the game.
    *

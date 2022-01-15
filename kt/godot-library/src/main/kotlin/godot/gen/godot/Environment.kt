@@ -1479,7 +1479,7 @@ public open class Environment : Resource() {
      */
     TONE_MAPPER_FILMIC(2),
     /**
-     * Academy Color Encoding System tonemapper operator. Performs an aproximation of the ACES tonemapping curve.
+     * Academy Color Encoding System tonemapper operator. Performs an approximation of the ACES tonemapping curve.
      */
     TONE_MAPPER_ACES(3),
     /**
@@ -1742,7 +1742,7 @@ public open class Environment : Resource() {
     public final const val SSAO_QUALITY_MEDIUM: Long = 1
 
     /**
-     * Academy Color Encoding System tonemapper operator. Performs an aproximation of the ACES tonemapping curve.
+     * Academy Color Encoding System tonemapper operator. Performs an approximation of the ACES tonemapping curve.
      */
     public final const val TONE_MAPPER_ACES: Long = 3
 

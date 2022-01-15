@@ -23,7 +23,9 @@ import kotlin.Unit
 /**
  * A script that is executed when exporting the project.
  *
- * Editor export plugins are automatically activated whenever the user exports the project. Their most common use is to determine what files are being included in the exported project. For each plugin, [_exportBegin] is called at the beginning of the export process and then [_exportFile] is called for each exported file.
+ * [godot.EditorExportPlugin]s are automatically invoked whenever the user exports the project. Their most common use is to determine what files are being included in the exported project. For each plugin, [_exportBegin] is called at the beginning of the export process and then [_exportFile] is called for each exported file.
+ *
+ * To use [godot.EditorExportPlugin], register it using the [godot.EditorPlugin.addExportPlugin] method first.
  */
 @GodotBaseType
 public open class EditorExportPlugin : Reference() {
@@ -140,7 +142,22 @@ public open class EditorExportPlugin : Reference() {
   }
 
   /**
-   * Adds a shared object with the given `tags` and destination `path`.
+   * Adds file or directory matching `path` to `PlugIns` directory of macOS app bundle.
+   *
+   * **Note:** This is useful only for macOS exports.
+   */
+  public open fun addOsxPluginFile(path: String): Unit {
+    TransferContext.writeArguments(STRING to path)
+    TransferContext.callMethod(rawPtr,
+        ENGINEMETHOD_ENGINECLASS_EDITOREXPORTPLUGIN_ADD_OSX_PLUGIN_FILE, NIL)
+  }
+
+  /**
+   * Adds a shared object or a directory containing only shared objects with the given `tags` and destination `path`.
+   *
+   * **Note:** In case of macOS exports, those shared objects will be added to `Frameworks` directory of app bundle.
+   *
+   * In case of a directory code-sign will error if you place non code object in directory.
    */
   public open fun addSharedObject(path: String, tags: PoolStringArray): Unit {
     TransferContext.writeArguments(STRING to path, POOL_STRING_ARRAY to tags)

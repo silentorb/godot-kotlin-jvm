@@ -20,7 +20,7 @@ import kotlin.Unit
  * Base input event type for mouse events.
  *
  * Tutorials:
- * [https://docs.godotengine.org/en/3.4/tutorials/inputs/inputevent.html](https://docs.godotengine.org/en/3.4/tutorials/inputs/inputevent.html)
+ * [$DOCS_URL/tutorials/inputs/inputevent.html]($DOCS_URL/tutorials/inputs/inputevent.html)
  *
  * Stores general mouse events information.
  */
@@ -43,7 +43,7 @@ public open class InputEventMouse : InputEventWithModifiers() {
     }
 
   /**
-   * The global mouse position relative to the current [godot.Viewport] when used in [godot.Control.GuiInput], otherwise is at 0,0.
+   * The global mouse position relative to the current [godot.Viewport]. If used in [godot.Control.GuiInput] and if the current [godot.Control] is not under the mouse, moving it will not update this value.
    */
   public open var globalPosition: Vector2
     get() {
@@ -59,7 +59,7 @@ public open class InputEventMouse : InputEventWithModifiers() {
     }
 
   /**
-   * The local mouse position relative to the [godot.Viewport]. If used in [godot.Control.GuiInput], the position is relative to the current [godot.Control] which is under the mouse.
+   * The local mouse position relative to the [godot.Viewport]. If used in [godot.Control.GuiInput], the position is relative to the current [godot.Control] which is under the mouse. If the current [godot.Control] is not under the mouse, moving it will not update this value.
    */
   public open var position: Vector2
     get() {

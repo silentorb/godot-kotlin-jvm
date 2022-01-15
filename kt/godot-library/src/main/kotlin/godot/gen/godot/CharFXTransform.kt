@@ -29,7 +29,7 @@ import kotlin.Unit
  * Controls how an individual character will be displayed in a [godot.RichTextEffect].
  *
  * Tutorials:
- * [https://docs.godotengine.org/en/3.4/tutorials/ui/bbcode_in_richtextlabel.html](https://docs.godotengine.org/en/3.4/tutorials/ui/bbcode_in_richtextlabel.html)
+ * [$DOCS_URL/tutorials/ui/bbcode_in_richtextlabel.html]($DOCS_URL/tutorials/ui/bbcode_in_richtextlabel.html)
  * [https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project](https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project)
  *
  * By setting various properties on this object, you can control how individual characters will be displayed in a [godot.RichTextEffect].
@@ -37,7 +37,7 @@ import kotlin.Unit
 @GodotBaseType
 public open class CharFXTransform : Reference() {
   /**
-   * The index of the current character (starting from 0). Setting this property won't affect drawing.
+   * The index of the current character (starting from 0) for the [godot.RichTextLabel]'s BBCode text. Setting this property won't affect drawing.
    */
   public open var absoluteIndex: Long
     get() {
@@ -143,7 +143,7 @@ public open class CharFXTransform : Reference() {
     }
 
   /**
-   * The index of the current character (starting from 0). Setting this property won't affect drawing.
+   * The index of the current character (starting from 0) for this [godot.RichTextEffect] custom block. Setting this property won't affect drawing.
    */
   public open var relativeIndex: Long
     get() {
